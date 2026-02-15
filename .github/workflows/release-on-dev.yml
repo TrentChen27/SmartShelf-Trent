@@ -1,0 +1,102 @@
+name: Build & Release (dev)
+
+on:
+  push:
+    branches: [ dev ]
+
+permissions:
+  contents: write
+
+env:
+  # Use Node 22 (must be >= 22.12 for this Vite version). You use Node 22 locally so match CI here.
+  NODE_VERSION: '22'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install backend requirements
+        run: |
+          set -e
+          python -m pip install --upgrade pip
+          if [ -f Backend/requirements.txt ]; then
+            pip install -r Backend/requirements.txt
+          else
+            echo "No Backend/requirements.txt found, skipping"
+          fi
+
+      - name: Backend syntax and import check
+        run: |
+          set -e
+          if [ -d Backend/app ]; then
+            echo "Checking Python syntax (compileall) in Backend/app..."
+            python -m compileall Backend/app
+            echo "Attempting to import backend package to catch runtime import errors..."
+            # Use a single-line python -c to avoid YAML/heredoc indentation issues
+            python -c 'import sys; sys.path.insert(0, "Backend"); import app; print("Imported app package successfully")'
+          else
+            echo "Backend/app not found; skipping backend checks"
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build Frontend
+        run: |
+          set -e
+          if [ -d Frontend ]; then
+            cd Frontend
+            npm ci
+            npm run build --if-present
+            cd ..
+          else
+            echo "Frontend directory not found; skipping frontend build"
+          fi
+
+      - name: Collect frontend build artifacts
+        id: package
+        run: |
+          set -e
+          mkdir -p release-artifacts
+          if [ -d Frontend/dist ]; then
+            cp -r Frontend/dist release-artifacts/dist
+          elif [ -d Frontend/build ]; then
+            cp -r Frontend/build release-artifacts/dist
+          else
+            echo "No frontend build output found (Frontend/dist or Frontend/build)"
+          fi
+          # Create a zip with only frontend artifacts
+          cd release-artifacts
+          zip -r ../release.zip . || true
+          cd ..
+          echo "artifact=release.zip" >> $GITHUB_OUTPUT
+
+      - name: Create release tag name
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          SHORT_SHA: ${{ github.sha }}
+        run: |
+          SHORT=${SHORT_SHA:0:8}
+          TAG_NAME="${BRANCH_NAME}-${SHORT}"
+          echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
+
+      - name: Create or update GitHub Release and upload artifact
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }}
+          files: release.zip
+          draft: false
+          prerelease: false

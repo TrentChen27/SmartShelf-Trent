@@ -1,0 +1,62 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  frontend-build:
+    name: Frontend Build Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: Frontend/package-lock.json
+        
+    - name: Install frontend dependencies
+      working-directory: ./Frontend
+      run: npm ci
+      
+    - name: Build frontend
+      working-directory: ./Frontend
+      run: npm run build
+
+  backend-build:
+    name: Backend Build Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: Backend/requirements.txt
+        
+    - name: Install backend dependencies
+      working-directory: ./Backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Compile Python files
+      working-directory: ./Backend
+      run: |
+        python -m py_compile run.py
+        python -m compileall app/

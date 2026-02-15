@@ -1,0 +1,40 @@
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+.env.*
+
+# IDE settings
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Node / Frontend artifacts
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+Frontend/.eslintcache
+Frontend/.stylelintcache
+
+# Python / Backend artifacts
+Backend/venv/
+Backend/**/*.pyc
+Backend/**/*.pyo
+Backend/**/*.pyd
+Backend/**/__pycache__/
+Backend/.mypy_cache/
+Backend/.pytest_cache/
+Backend/.coverage
+
+# Build / cache directories
+.cache/
+tmp/
+temp/
+
+# OS generated files
+ehthumbs.db
+Desktop.ini
