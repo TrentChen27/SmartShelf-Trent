@@ -188,17 +188,20 @@ SmartShelf uses JWT (JSON Web Tokens) for authentication:
 - Protected routes require a valid JWT token in the Authorization header
 - Tokens contain user role information for role-based access control
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## 📝 License
 
 This project is part of a database systems course project.
 
-## 👤 Author
+## 👥 Contributors
 
-**Trent Chen**
+**Jixian Zeng** (UI/UX, Backend)
+- Database Design, Framework Setup, Manager Features, Cloud Deployment, Report
+
+**Chongrui Yang** (Backend)
+- Database Design, Framework Setup, Customer Features, Report
+
+**Yiqin (Trent) Chen** (UI/UX, Backend)
+- Database Design, Framework Setup, Manager+Analysis Features, Report
 - GitHub: [@TrentChen27](https://github.com/TrentChen27)
 
 ## 🙏 Acknowledgments
